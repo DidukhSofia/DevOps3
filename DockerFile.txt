@@ -1,0 +1,17 @@
+FROM ubuntu:latest
+
+# install necessary packages
+RUN apt-get update && \
+    apt-get install -y mysql-client mailutils cron && \
+    apt-get clean
+
+# copy bash script to container
+COPY check_replication.sh /usr/local/bin/check_replication.sh
+RUN chmod +x /usr/local/bin/check_replication.sh
+
+# add cron job to run script every 30 seconds
+RUN echo '* * * * * root /usr/local/bin/check_replication.sh >> /var/log/check_replication.log 2>&1' > /etc/cron.d/check_replication
+RUN chmod 0644 /etc/cron.d/check_replication
+RUN crontab /etc/cron.d/check_replication
+
+CMD ["cron", "-f"]

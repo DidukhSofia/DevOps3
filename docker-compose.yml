@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  master:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - ./master:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - db-network
+
+  slave:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_MASTER_HOST: master
+      MYSQL_MASTER_PORT: 3306
+      MYSQL_MASTER_USER: root
+      MYSQL_MASTER_PASSWORD: password
+    volumes:
+      - ./slave:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - db-network
+
+  check_replication:
+    build: .
+    environment:
+      MAIL_RECIPIENT: user@example.com
+    networks:
+      - db-network
+
+networks:
+  db-network:
